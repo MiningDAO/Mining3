@@ -93,7 +93,7 @@ contract Mining3 is
         IERC20(_earningToken).safeTransferFrom(
             msg.sender,
             address(this),
-            earningPerToken * supply
+            earningPerToken * supply / 1000000000000000000
         );
     }
 

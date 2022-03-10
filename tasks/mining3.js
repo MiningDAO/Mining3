@@ -231,3 +231,31 @@ task('mining3-clone', 'finalize cycle for DeMineNFT contract')
         );
         return cloned;
     });
+
+task('mining3-inspect', 'finalize cycle for DeMineNFT contract')
+    .addParam('coin', 'earning token symbol')
+    .setAction(async (args, { ethers } = hre) => {
+        config.validateCoin(args.coin);
+        const mining3Deploy = await config.getDeployment(hre, 'Mining3');
+        const beaconDeploy = await config.getDeployment(hre, 'UpgradeableBeacon');
+        const proxyDeploy = await config.getDeployment(hre, 'Mining3Proxy');
+
+        const contracts = state.tryLoadContracts(hre, args.coin);
+        const mining3Proxy = await ethers.getContractAt(
+            'Mining3Proxy', contracts.mining3.target
+        );
+        const beacon = await ethers.getContractAt(
+            'UpgradeableBeacon',
+            await mining3Proxy.beacon()
+        );
+
+        logger.info(JSON.stringify({
+            proxySource: contracts.mining3.source,
+            mining3Proxy: mining3Proxy.address,
+            beacon: beacon.address,
+            implementation: await beacon.implementation(),
+            beaconDeploy: beaconDeploy.address,
+            mining3Deploy: mining3Deploy.address,
+            proxyDeploy: proxyDeploy.address
+        }, null, 2));
+    });
