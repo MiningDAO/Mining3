@@ -174,7 +174,7 @@ contract Mining3 is
     }
 
     function _earning(uint256 balance, uint256 from, uint256 to) private view returns(uint256) {
-        return balance == 0 ? 0 : balance * (
+        return balance == 0 ? 0 : (balance / 1000000000000000000) * (
             _earningSum[to] - _earningSum[from]
         );
     }
