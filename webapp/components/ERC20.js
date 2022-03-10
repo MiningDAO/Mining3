@@ -27,7 +27,7 @@ function ERC20(props) {
                 <span>{value}({new Date(value * 1000).toUTCString()})</span>
             ),
         },
-        {title: 'Total Earning', dataIndex: 'earning', key: 'earning'},
+        {title: 'Earning', dataIndex: 'earning', key: 'earning'},
         {title: 'Balance', dataIndex: 'balance', key: 'balance'},
         {title: 'Withdrawn', dataIndex: 'withdrawn', key: 'withdrawn'},
     ];
@@ -53,6 +53,7 @@ function ERC20(props) {
 
         var dataSource = [];
         var totalEarning = new BigNumber(0);
+        var unwithdrawnEarning = new BigNumber(0);
         for (let i = 0; i < ids.length; i++) {
             const snapshot = ids[i].toNumber();
             const balance = new BigNumber(values[i].toString()).div('1e+18');
@@ -60,15 +61,19 @@ function ERC20(props) {
                 i == 0 ? 0 : earningSums[i - 1]
             ).div('1e+18');
             totalEarning = totalEarning.plus(earningPerToken.times(balance));
+            const withdrawn = snapshot <= withdrawAt.toNumber() ? 'true' : 'false';
+            if (withdrawn === 'false') {
+                unwithdrawnEarning = unwithdrawnEarning.plus(earningPerToken.times(balance));
+            }
             dataSource.push({
                 key: i.toString(),
                 id: snapshot,
                 balance: balance.toFixed(),
                 earning: earningPerToken.times(balance).toFixed(),
-                withdrawn: snapshot <= withdrawAt.toNumber() ? 'true' : 'false',
+                withdrawn: withdrawn,
             });
         }
-        props.onEarning(totalEarning.toFixed());
+        props.onEarning(totalEarning.toFixed(), unwithdrawnEarning.toFixed());
         setDataSource(dataSource);
     }
 

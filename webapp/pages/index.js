@@ -28,7 +28,8 @@ function HomePage() {
   const [isReady, setIsReady] = useState(false);
   const [chain, setChain] = useState(false);
   const [contract, setContract] = useState(null);
-  const [earning, setEarning] = useState(0);
+  const [totalEarning, setTotalEarning] = useState(0);
+  const [unwithdrawnEarning, setUnwithdrawnEarning] = useState(0);
 
   const onChange = async(chain, accounts) => {
     if (chain && accounts.length > 0) {
@@ -47,13 +48,20 @@ function HomePage() {
   return (
     <Layout className="App">
       <Header className="header">
-        <Connect onChange={onChange} earning={earning}/>
+        <Connect
+          onChange={onChange}
+          totalEarning={totalEarning}
+          unwithdrawnEarning={unwithdrawnEarning}
+        />
       </Header>
       {
         isReady &&
         <Content styles={{ padding: '50px 50px' }}>
           <ERC20
-            onEarning={(value) => setEarning(value)}
+            onEarning={(total, unwithdrawn) => {
+                setTotalEarning(total);
+                setUnwithdrawnEarning(unwithdrawn);
+            }}
             contract={contract}
             chain={chain}
           />

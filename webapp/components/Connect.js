@@ -164,7 +164,9 @@ function Connect(props) {
             <div key="1">
               <span> Account: {accounts[0]} </span>
               <br/>
-              <span> Aggregated Earning: {props.earning} </span>
+              <span> Total Earning: {props.totalEarning} </span>
+              <br/>
+              <span> Pending Withdraw: {props.unwithdrawnEarning} </span>
             </div>
         ]}
       />
