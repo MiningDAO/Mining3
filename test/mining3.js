@@ -1,6 +1,5 @@
 const { expect } = require("chai");
 const { ethers } = hre = require("hardhat");
-const logger = require('../lib/logger.js');
 const config = require("../lib/config.js");
 const time = require("../lib/time.js");
 
@@ -24,13 +23,13 @@ describe("Mining3", function () {
         const signers = await ethers.getNamedSigners();
         test = signers.test;
         admin = await config.admin(hre);
-        await hre.deployments.fixture(['Local', 'Mining3']);
+        await hre.deployments.fixture(['Local']);
         mining3 = await hre.run('mining3-clone', {coin: coin});
         mining3 = await ethers.getContractAt('Mining3', mining3);
         beacon = await config.getDeployment(hre, 'UpgradeableBeacon');
 
         earningToken = await ethers.getContractAt(
-            'ERC20Facet',
+            'TestEarningToken',
             await mining3.earningToken()
         );
     });
@@ -170,15 +169,69 @@ describe("Mining3", function () {
         }
     });
 
-    it("mining3 withdraw", async function() {
+    it.only("mining3 withdraw", async function() {
         const date = new Date();
         const timestamp = time.toEpoch(date);
         const finalized = await mining3.lastFinalizedAt();
 
         await mining3.connect(admin.signer).mint(test.address, 10000);
 
+        const withdraw = async function(user, earning) {
+            const balance = await earningToken.balanceOf(mining3.address);
+            const withdrawAt = await mining3.lastWithdrawAt(user.address);
+            const finalizedAt = await mining3.lastFinalizedAt();
+            await mining3.connect(user).withdraw();
+
+            let [ids, values] = await mining3.balanceSnapshots(test.address);
+            ids = Array.from(ids);
+            ids.unshift(withdrawAt);
+            ids.push(finalizedAt);
+            values = Array.from(values);
+            if (withdrawAt > 0) {
+                values.unshift(await mining3.balanceOfAt(user.address, withdrawAt));
+            } else {
+                values.unshift(ethers.BigNumber.from(0));
+            }
+            values.push(await mining3.balanceOfAt(user.address, finalizedAt));
+
+            const earningSum = await mining3.batchEarningSum(ids);
+
+            let balances = [values[0]];
+            let earnings = [earningSum[0]];
+            for (let i = 1; i < ids.length; i++) {
+                if (ids[i].lte(withdrawAt)) {
+                    continue;
+                }
+                if (ids[i].lt(finalizedAt)) {
+                    balances.push(values[i]);
+                    earnings.push(earningSum[i]);
+                } else {
+                    balances.push(values[i]);
+                    earnings.push(earningSum[earningSum.length - 1]);
+                    break;
+                }
+            }
+
+            let totalEarnings = new ethers.BigNumber.from(0);
+            for (let i = 1; i < balances.length; i++) {
+                const earning = earnings[i].sub(earnings[i - 1]);
+                totalEarnings = totalEarnings.add(balances[i].mul(earning));
+            }
+            expect(
+                await earningToken.balanceOf(mining3.address)
+            ).to.equal(balance.sub(totalEarnings));
+        }
+        expect(
+            await mining3.lastWithdrawAt(test.address)
+        ).to.equal(0);
+
+        await withdraw(test);
+        expect(
+            await mining3.lastWithdrawAt(test.address)
+        ).to.equal(await mining3.lastFinalizedAt());
+
         const startSnapshot = time.startOfDay(date);
-        for (let i = 0; i < 50; i++) {
+        for (let i = 0; i <= 50; i++) {
             const delta = 86400 * (i + 1);
             const snapshot = startSnapshot + delta;
             await mine(timestamp + delta);
@@ -189,39 +242,18 @@ describe("Mining3", function () {
             await earningToken.connect(admin.signer).approve(mining3.address, supply * i);
             await mining3.connect(admin.signer).finalize(i);
 
-            if (i % 10 == 0) {
+            if (i % 5 == 0) {
                 await mining3.connect(test).transfer(admin.address, 500);
             }
         }
 
-        await expect(
-            mining3.connect(test).withdraw(10000)
-        ).to.be.revertedWith('Mining3: malformed snapshot id');
+        await withdraw(test);
+        expect(
+            await mining3.lastWithdrawAt(test.address)
+        ).to.equal(await mining3.lastFinalizedAt());
 
         await expect(
-            mining3.connect(test).withdraw(
-                await mining3.lastFinalizedAt() + 86400
-            )
-        ).to.be.revertedWith('Mining3: not finalized');
-
-        const withdraw = async function(delta, earning) {
-            const snapshot = startSnapshot + delta;
-
-            const balance = await earningToken.balanceOf(mining3.address);
-            await mining3.connect(test).withdraw(finalized.add(delta));
-            expect(
-                await mining3.lastWithdrawAt(test.address)
-            ).to.equal(finalized.add(delta));
-
-            expect(
-                await earningToken.balanceOf(mining3.address)
-            ).to.equal(balance.sub(earning));
-        }
-
-        await withdraw(0, 0);
-        await withdraw(86400 * 5, 75000);
-        await withdraw(86400 * 15, 802500);
-        await withdraw(86400 * 50, 8990000);
+            mining3.connect(test).withdraw()
+        ).to.be.revertedWith('Mining3: already withdrawed');
     });
 });
-

@@ -18,16 +18,11 @@ const formatTs = function(ts) {
 
 async function loadEarningToken(hre, coin) {
     const earningTokenConfig = localConfig.earningToken[hre.network.name] || {};
-    const contracts = state.tryLoadContracts(hre, coin);
-    const key = 'wrapped' + coin.toUpperCase();
-    const wrapped = contracts[key] || contracts.wrapped;
-    const earningTokenAddr = earningTokenConfig[coin.toLowerCase()]
-        || (wrapped && wrapped.target)
-        || await hre.run('wrapped-clone', { coin: coin });
-    return await ethers.getContractAt(
-        '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol:IERC20Metadata',
-        earningTokenAddr
-    );
+    const earningTokenAddr = earningTokenConfig[coin];
+    if (earningTokenAddr) {
+        return await ethers.getContractAt('ERC20', earningTokenAddr);
+    }
+    return await config.getDeployment(hre, 'TestEarningToken');
 }
 
 async function getFinalizing(mining3, args) {

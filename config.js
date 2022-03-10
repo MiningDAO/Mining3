@@ -107,28 +107,6 @@ const config = {
             key: process.env.POLY_SCAN_KEY,
         },
     },
-    wrapped: {
-        usd: {
-            name: 'DeMine Wrapped USD',
-            symbol: 'DPAY',
-            decimals: 18
-        },
-        btc: {
-            name: 'DeMine Wrapped BTC',
-            symbol: 'DBTC',
-            decimals: 18
-        },
-        eth: {
-            name: 'DeMine Wrapped ETH',
-            symbol: 'DETH',
-            decimals: 18
-        },
-        fil: {
-            name: 'DeMine Wrapped FIL',
-            symbol: 'DFIL',
-            decimals: 18
-        }
-    },
     enableGasReporter: true
 };
 

@@ -99,8 +99,6 @@ contract Mining3 is
 
     function withdraw() external whenNotPaused {
         uint256 snapshotId = _finalized;
-        require(snapshotId % 86400 == 0, 'Mining3: malformed snapshot id');
-        require(snapshotId <= _finalized, 'Mining3: not finalized');
 
         Withdrawal storage withdrawal = _withdrawal[msg.sender];
         uint256 prev = withdrawal.snapshotId;
@@ -113,20 +111,18 @@ contract Mining3 is
         uint256 index = withdrawal.index;
         for (; index < length; index++) {
             uint256 cur = snapshots.ids[index];
-            if (cur < snapshotId) {
-                totalEarning += _earning(snapshots.values[index], prev, cur);
-            } else {
-                totalEarning += _earning(balanceOf(msg.sender), prev, snapshotId);
+            if (cur > snapshotId) {
                 break;
             }
+            totalEarning += _earning(snapshots.values[index], prev, cur);
             prev = cur;
         }
-        if (index == length) {
+        if (index == length && snapshotId > prev) {
             totalEarning += _earning(balanceOf(msg.sender), prev, snapshotId);
         }
+
         withdrawal.snapshotId = snapshotId;
         withdrawal.index = index;
-
         IERC20(_earningToken).safeTransfer(msg.sender, totalEarning);
     }
 
