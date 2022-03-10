@@ -10,3 +10,18 @@ artifacts
 
 .openzeppelin
 logs
+
+# Next.js build output
+.next
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+#vim temp file
+*.swp
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+
+.DS_Store
