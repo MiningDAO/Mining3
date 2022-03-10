@@ -37,9 +37,9 @@ async function getFinalizing(mining3, args) {
     const now = time.toEpoch(new Date());
     const nowAsDate = new Date(now * 1000).toISOString();
     if (finalizing > now) {
-        throw `Error: cannot finalize future tokens, ` +
-            `now is ${now}(${nowAsDate}), finalizing ${finalizing}(${finalizingAsDate})`;
+        throw 'No need to finalize'
     }
+
     return {
         finalizing,
         finalizingAsDate,
@@ -50,7 +50,7 @@ async function getFinalizing(mining3, args) {
     };
 }
 
-async function getPoolStatsAndTokenRelease(hre, args, mining3, context) {
+async function genPoolStats(hre, args, context) {
     const { finalizing } = context;
     const poolStats = await antpool.stats(
         hre.localConfig.antpool, args.coin, finalizing
@@ -59,35 +59,28 @@ async function getPoolStatsAndTokenRelease(hre, args, mining3, context) {
     poolStats.hashrateDecimal = poolStats.hashrate.div(hashPerToken);
     logger.info('AntPool stats loaded: ' + JSON.stringify(poolStats, null, 2));
 
-    const tokenizedHashrate = await mining3.totalSupplyAt(finalizing);
-    logger.info(`Tokenized hashrate is ${tokenizedHashrate}`);
-
-    if (poolStats.hashrateDecimal.lt(tokenizedHashrate)) {
+    if (poolStats.hashrateDecimal.lt(context.tokenizedHashrate)) {
         const errMsg = "Effective hashrate is lower than token released!"
         if (!args.nosupplycheck) {
             throw `Error: ${errMsg} Real Hashrate is ${poolStats.hashrateDecimal.toString()},`
-                + `tokenized Hashrate is ${tokenizedHashrate.toString()}`;
+                + `tokenized Hashrate is ${context.tokenizedHashrate.toString()}`;
         } else {
             logger.warn(errMsg);
         }
     }
-    return {
-        tokenizedHashrate,
-        ...poolStats
-    };
+    return poolStats;
 }
 
-async function earning(admin, earningToken, context) {
+async function genEarning(admin, earningToken, context) {
     const {tokenizedHashrate, totalEarnedDecimal, hashrateDecimal} = context;
-    const base = new BN(10).pow(await earningToken.decimals());
     const earningPerTokenDecimal = totalEarnedDecimal.div(hashrateDecimal);
-    const earningPerToken = earningPerTokenDecimal.times(base).integerValue();
+    const earningPerToken = earningPerTokenDecimal.times(context.earningTokenBase).integerValue();
 
     const amountToDeposit = earningPerToken.times(tokenizedHashrate);
     const amountToDepositDecimal = earningPerTokenDecimal.times(tokenizedHashrate);
 
     const adminBalance = await earningToken.balanceOf(admin.address);
-    const adminBalanceDecimal = new BN(adminBalance.toString()).div(base);
+    const adminBalanceDecimal = new BN(adminBalance.toString()).div(context.earningTokenBase);
     if (amountToDepositDecimal.gt(adminBalanceDecimal)) {
         throw `Error: Insufficient balance of admin to deposit` +
             `, required=${totalEarningAsDecimal}, balance=${adminBalanceDecimal}`
@@ -143,17 +136,21 @@ task('mining3-finalize', 'finalize cycle for DeMineNFT contract')
         logger.info(`Earning token ${earningToken.address} loaded`);
 
         var context = await getFinalizing(mining3, args);
-        lodash.merge(context, await getPoolStatsAndTokenRelease(
-            hre, args, mining3, context
-        ));
-        lodash.merge(context, await earning(admin, earningToken, context));
+        context.earningTokenBase = new BN(10).pow(await earningToken.decimals());
+        const supply = await mining3.totalSupplyAt(context.finalizing);
+        context.tokenizedHashrate = new BN(supply.toString()).div(context.earningTokenBase);
+        logger.info(`Tokenized hashrate is ${context.tokenizedHashrate}`);
+
+        lodash.merge(context, await genPoolStats(hre, args, context));
+        lodash.merge(context, await genEarning(admin, earningToken, context));
         lodash.merge(context, await genAppendix(admin, mining3, earningToken));
 
         logger.info('Report: ' + JSON.stringify(context, null, 2));
         const {request, response} = await common.run(
             hre,
             admin,
-            mining3, 'finalize',
+            mining3,
+            'finalize',
             [["earningPerToken", context.earningPerToken]],
             {dryrun: args.dryrun}
         );
@@ -171,7 +168,7 @@ task('mining3-clone', 'finalize cycle for DeMineNFT contract')
         const proxy = await config.getDeployment(hre, 'Mining3Proxy');
 
         const contracts = state.tryLoadContracts(hre, args.coin);
-        if (contracts.mining3 && contracts.mining3.source == proxy.address) {
+        if (contracts.mining3) {
             logger.info("Nothing changed.");
             return contracts.mining3.target;
         }
@@ -220,6 +217,7 @@ task('mining3-clone', 'finalize cycle for DeMineNFT contract')
             txReceipt
         );
         const cloned = events['Clone'].args.cloned;
+
         logger.info('Writing contract info to state file');
         state.updateContract(
             hre, args.coin, {

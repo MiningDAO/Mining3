@@ -91,7 +91,7 @@ contract Mining3 is
         }
 
         IERC20(_earningToken).safeTransferFrom(
-            owner(),
+            msg.sender,
             address(this),
             earningPerToken * supply
         );

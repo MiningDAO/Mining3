@@ -106,32 +106,47 @@ task('mining3-finalize-e2e', 'finalize token earnings')
             const mining3Addr = state.loadMining3(hre, args.coin).target;
             const mining3 = await ethers.getContractAt('Mining3', mining3Addr);
             const earningToken = await ethers.getContractAt(
-                '@solidstate/contracts/token/ERC20/ERC20.sol:ERC20',
+                'ERC20',
                 await mining3.earningToken()
             );
 
-            var finalized = (await mining3.lastFinalizedAt()).toNumber();
-            const endTs = time.startOfDay(new Date());
-            if (finalized == endTs) {
-                const finalizedAsDate = new Date(finalized * 1000).toISOString();
-                logger.info(`No need to finalize, lastest finalized is ${finalizedAsDate}`);
-                return;
-            }
+            const allowance = await earningToken.allowance(
+                admin.address,
+                mining3.address
+            );
+            console.log('allowance: ' + allowance.toString());
 
-            var requests = [
-                await run(
-                    'mining3-finalize',
-                    {
-                        coin: args.coin,
-                        nosupplycheck: args.nosupplycheck,
-                        dryrun: true,
-                    }
-                )
-            ];
+            const finalizeRequest = await run(
+                'mining3-finalize',
+                {
+                    coin: args.coin,
+                    mining3: mining3Addr,
+                    nosupplycheck: args.nosupplycheck,
+                    dryrun: true,
+                }
+            );
+
+            const approveRequest = await common.run(
+                hre,
+                admin,
+                earningToken,
+                'increaseAllowance',
+                [
+                    ["spender", mining3.address],
+                    ["amount", finalizeRequest.context.amountToDeposit]
+                ],
+                {dryrun: true}
+            );
             return await exec(
-                hre, args.coin, admin, requests, {skipPrompts: args.skipprompts}
+                hre,
+                args.coin,
+                admin,
+                [approveRequest, finalizeRequest],
+                {skipPrompts: args.skipprompts}
             );
         } catch(err) {
+            console.log(err);
+            return;
             await courier.notifyE2EFailure(
                 hre,
                 args.coin,
