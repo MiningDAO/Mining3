@@ -19,18 +19,18 @@
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@openzeppelin/contracts": "^4.4.0",
     "@openzeppelin/contracts-upgradeable": "^4.5.2",
+    "@trycourier/courier": "^3.5.0",
     "app-root-path": "^3.0.0",
+    "axios-retry": "^3.2.4",
     "chai": "^4.3.6",
     "dotenv": "^10.0.0",
+    "ethers": "^5.6.0",
     "hardhat": "^2.7.0",
     "hardhat-contract-sizer": "^2.1.1",
     "hardhat-deploy": "^0.9.24",
     "hardhat-deploy-ethers": "^0.3.0-beta.13",
     "hardhat-gas-reporter": "^1.0.6",
     "prompts": "^2.4.2",
-    "axios-retry": "^3.2.4",
-    "winston": "^3.6.0",
-    "axios-retry": "^3.2.4",
-    "@trycourier/courier": "^3.5.0"
+    "winston": "^3.6.0"
   }
 }
