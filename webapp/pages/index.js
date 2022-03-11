@@ -23,6 +23,8 @@ const contractAbi = [
   "function batchEarningSum(uint256[] calldata snapshotIds) external view returns(uint256[])",
   "function earningToken() external view returns(address)",
   "function withdraw() external",
+  "function balanceOfAt(address account, uint256 snapshotId) external view returns (uint256)",
+  "function balanceOf(address account) external view returns (uint256)",
   "event Transfer(address indexed from, address indexed to, uint amount)",
 ];
 
@@ -68,9 +70,9 @@ function HomePage() {
               {formatAccount(account)}
             </Button>,
             <div key="1">
-              <span> Total Earning: {totalEarning} </span>
+              <span> Total Earning: {totalEarning} BTCB </span>
               <br />
-              <span> Pending Withdraw: {unwithdrawnEarning} </span>
+              <span> Pending Withdraw: {unwithdrawnEarning} BTCB </span>
             </div>
           ]}
         >
