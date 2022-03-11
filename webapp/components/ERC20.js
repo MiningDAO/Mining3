@@ -55,7 +55,7 @@ function ERC20(props) {
                 <span>{new Date(value * 1000).toUTCString()}</span>
             ),
         },
-        {title: 'Earning', dataIndex: 'earning', key: 'earning'},
+        {title: 'Earning(BTCB)', dataIndex: 'earning', key: 'earning'},
         {title: 'Balance', dataIndex: 'balance', key: 'balance'},
         {title: 'Withdrawn', dataIndex: 'withdrawn', key: 'withdrawn'},
         {title: 'Finalized', dataIndex: 'finalized', key: 'finalized'},
