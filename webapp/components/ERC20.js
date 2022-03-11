@@ -95,27 +95,25 @@ function ERC20(props) {
 
         var dataSource = [];
         var totalEarning = new BigNumber(0);
-        var unwithdrawnEarning = new BigNumber(0);
         for (let i = 1; i < ids.length; i++) {
             const snapshot = ids[i].toNumber();
             const balance = new BigNumber(values[i].toString()).div('1e+18');
             const earningPerToken = earning(i);
             const earningPerSnapshot = balance.times(earningPerToken);
             totalEarning = totalEarning.plus(earningPerSnapshot);
-            const withdrawn = snapshot <= withdrawAt.toNumber() ? 'true' : 'false';
-            if (withdrawn === 'false') {
-                unwithdrawnEarning = unwithdrawnEarning.plus(earningPerSnapshot);
-            }
             dataSource.push({
                 key: i.toString(),
                 from: ids[i - 1].toNumber(),
                 to: snapshot,
                 balance: balance.toFixed(),
                 earning: earningPerSnapshot.toFixed(),
-                withdrawn: withdrawn,
+                withdrawn: snapshot <= withdrawAt.toNumber() ? 'true' : 'false',
                 finalized: snapshot <= finalizedAt.toNumber() ? 'true' : 'false',
             });
         }
+
+        let unwithdrawnEarning = await props.contract.getUnwithdrawnEarnings();
+        unwithdrawnEarning = new BigNumber(unwithdrawnEarning.toString()).div('1e+18');
 
         props.onEarning(totalEarning.toFixed(), unwithdrawnEarning.toFixed());
         setToWithdraw(unwithdrawnEarning.toFixed());

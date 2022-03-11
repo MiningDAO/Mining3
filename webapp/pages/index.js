@@ -12,7 +12,6 @@ const { Header, Content, Footer } = Layout;
 function formatAccount(account) {
     const length = account.length;
     const print = account.slice(0, 6) + '...' + account.slice(length - 5, length - 1);
-    console.log(print);
     return print;
 }
 
@@ -25,6 +24,7 @@ const contractAbi = [
   "function withdraw() external",
   "function balanceOfAt(address account, uint256 snapshotId) external view returns (uint256)",
   "function balanceOf(address account) external view returns (uint256)",
+  "function getUnwithdrawnEarnings() external view returns(uint256)",
   "event Transfer(address indexed from, address indexed to, uint amount)",
 ];
 
