@@ -3,7 +3,8 @@ import { ethers } from 'ethers';
 import moment from 'moment';
 import BigNumber from "bignumber.js";
 import { useState, useEffect } from 'react';
-import { Table, Button, Modal, Divider, Spin, notification } from 'antd';
+import { Table, Modal, Divider, notification } from 'antd';
+import Withdraw from './Withdraw.js';
 
 const Status = {
   NO_DATA: 'no_data',
@@ -109,25 +110,13 @@ function ERC20(props) {
         });
     }
 
-    const confirmWithdraw = () => {
-        setStatus(Status.CONFIRMING);
-    };
-
     return (
       <div className='transfer'>
-        <>
-          {
-            status === Status.WITHDRAWING
-              ? <Spin tip="Waiting for 3 confirmations..." />
-              : <Button
-                  className='right-space'
-                  type="primary"
-                  onClick={confirmWithdraw}
-                >
-                  {'Withdraw'}
-                </Button>
-          }
-        </>
+        <Withdraw
+          status={status}
+          confirmWithdraw={() => setStatus(Status.CONFIRMING)}
+        >
+        </Withdraw>
         <Divider />
         <Table
           rowClassName={(row) => {
@@ -157,3 +146,5 @@ function ERC20(props) {
 }
 
 export default ERC20;
+
+export { Status };

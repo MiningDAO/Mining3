@@ -1,7 +1,7 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import MetaMaskOnboarding from '@metamask/onboarding';
-import { Spin, Button, PageHeader } from 'antd';
+import { Button } from 'antd';
 
 const BSC_MAINNET_PARAMS = {
   chainId: '0x38',
@@ -155,22 +155,9 @@ function Connect(props) {
       </div>
     )
   } else {
-    return (
-      <PageHeader
-        className="site-page-header"
-        title="Mining3"
-        subTitle="Mining for Web3"
-        extra={[
-            <div key="1">
-              <span> Account: {accounts[0]} </span>
-              <br/>
-              <span> Total Earning: {props.totalEarning} </span>
-              <br/>
-              <span> Pending Withdraw: {props.unwithdrawnEarning} </span>
-            </div>
-        ]}
-      />
-    );
+      return (
+        <></>
+      );
   }
 }
 
