@@ -43,9 +43,7 @@ function Connect(props) {
   const [installed, setInstalled] = useState(false);
 
   const onChange = (from, chainId, accounts) => {
-    if (isBSC(chainId)) {
-      props.onChange(chainId, accounts);
-    } else if (isBSCTest(chainId)) {
+    if (isBSCTest(chainId)) {
       props.onChange(chainId, accounts);
     } else {
       props.onChange(null, []);
@@ -70,14 +68,14 @@ function Connect(props) {
       });
   }
 
-  const switchToBSC = () => {
+  const switchToBSCTestnet = () => {
     window.ethereum
       .request({
         method: 'wallet_addEthereumChain',
-        params: [BSC_MAINNET_PARAMS]
+        params: [BSC_TESTNET_PARAMS]
       }).then(() => {
-        setChainId(BSC_MAINNET_PARAMS.chainId);
-        onChange('switch', BSC_MAINNET_PARAMS.chainId, accounts);
+        setChainId(BSC_TESTNET_PARAMS.chainId);
+        onChange('switch', BSC_TESTNET_PARAMS.chainId, accounts);
       });
   }
 
@@ -142,15 +140,15 @@ function Connect(props) {
         </Button>
       </div>
     )
-  } else if (!isBSC(chainId) && !isBSCTest(chainId)) {
+  } else if (!isBSCTest(chainId)) {
     return (
       <div>
         <div>MetaMask Wallet connected!</div>
         <div>Chain: {chainId}</div>
         <div>Account: {accounts[0]}</div>
-        <div>To run this dApp you need to switch to the {BSC_MAINNET_PARAMS.chainName} chain</div>
-        <Button type="primary" onClick={switchToBSC}>
-          Switch to the {BSC_MAINNET_PARAMS.chainName} chain
+        <div>To run this dApp you need to switch to the {BSC_TESTNET_PARAMS.chainName} chain</div>
+        <Button type="primary" onClick={switchToBSCTestnet}>
+          Switch to the {BSC_TESTNET_PARAMS.chainName} chain
         </Button>
       </div>
     )
