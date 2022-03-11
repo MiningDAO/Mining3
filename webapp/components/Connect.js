@@ -36,6 +36,12 @@ const isBSCTest = (chainId) => (
   chainId && BSC_TESTNET_PARAMS.chainId.toLowerCase() === chainId
 );
 
+const isSupportedChain = (chainId) => {
+  return isBSCTest(chainId);
+}
+
+const DEFAULT_CHAIN_PARAMS = BSC_TESTNET_PARAMS;
+
 function Connect(props) {
   const [accounts, setAccounts] = useState([]);
   const [chainId, setChainId] = useState(null);
@@ -43,7 +49,7 @@ function Connect(props) {
   const [installed, setInstalled] = useState(false);
 
   const onChange = (from, chainId, accounts) => {
-    if (isBSCTest(chainId)) {
+    if (isSupportedChain(chainId)) {
       props.onChange(chainId, accounts);
     } else {
       props.onChange(null, []);
@@ -68,14 +74,14 @@ function Connect(props) {
       });
   }
 
-  const switchToBSCTestnet = () => {
+  const switchChain = (params) => {
     window.ethereum
       .request({
         method: 'wallet_addEthereumChain',
-        params: [BSC_TESTNET_PARAMS]
+        params: [params]
       }).then(() => {
-        setChainId(BSC_TESTNET_PARAMS.chainId);
-        onChange('switch', BSC_TESTNET_PARAMS.chainId, accounts);
+        setChainId(params.chainId);
+        onChange('switch', params.chainId, accounts);
       });
   }
 
@@ -146,9 +152,9 @@ function Connect(props) {
         <div>MetaMask Wallet connected!</div>
         <div>Chain: {chainId}</div>
         <div>Account: {accounts[0]}</div>
-        <div>To run this dApp you need to switch to the {BSC_TESTNET_PARAMS.chainName} chain</div>
-        <Button type="primary" onClick={switchToBSCTestnet}>
-          Switch to the {BSC_TESTNET_PARAMS.chainName} chain
+        <div>To run this dApp you need to switch to the {DEFAULT_CHAIN_PARAMS.chainName} chain</div>
+        <Button type="primary" onClick={() => switchChain(DEFAULT_CHAIN_PARAMS)}>
+          Switch to the {DEFAULT_CHAIN_PARAMS.chainName} chain
         </Button>
       </div>
     )
