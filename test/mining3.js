@@ -9,6 +9,8 @@ const transport = logger.transports.find(
 );
 transport.level = 'warn';
 
+const base = ethers.BigNumber.from(10).pow(18);
+
 const mine = async function(timestamp) {
     await ethers.provider.send("evm_setNextBlockTimestamp", [timestamp]);
     await network.provider.send("evm_mine");
@@ -148,7 +150,8 @@ describe("Mining3", function () {
             await mine(timestamp + 86400 * (i + 1));
 
             const toFinalize = finalized.add(86400 * (i + 1));
-            const supply = await mining3.totalSupplyAt(toFinalize);
+            let supply = await mining3.totalSupplyAt(toFinalize);
+            supply = supply.div(base);
 
             await earningToken.connect(admin.signer).mint(admin.address, supply * i);
             expect(await earningToken.balanceOf(admin.address)).to.equal(supply * i);
@@ -164,7 +167,7 @@ describe("Mining3", function () {
             expect(earningSum).to.equal(expectedEarningSum);
 
             if (Math.random() > 0.5) {
-                await mining3.connect(admin.signer).mint(test.address, 1000);
+                await mining3.connect(admin.signer).mint(test.address, base.mul(1000));
             }
         }
     });
@@ -174,7 +177,7 @@ describe("Mining3", function () {
         const timestamp = time.toEpoch(date);
         const finalized = await mining3.lastFinalizedAt();
 
-        await mining3.connect(admin.signer).mint(test.address, 10000);
+        await mining3.connect(admin.signer).mint(test.address, base.mul(10000));
 
         const withdraw = async function(user, earning) {
             const balance = await earningToken.balanceOf(mining3.address);
@@ -215,7 +218,7 @@ describe("Mining3", function () {
             let totalEarnings = new ethers.BigNumber.from(0);
             for (let i = 1; i < balances.length; i++) {
                 const earning = earnings[i].sub(earnings[i - 1]);
-                totalEarnings = totalEarnings.add(balances[i].mul(earning));
+                totalEarnings = totalEarnings.add(balances[i].div(base).mul(earning));
             }
             expect(
                 await earningToken.balanceOf(mining3.address)
@@ -237,7 +240,8 @@ describe("Mining3", function () {
             await mine(timestamp + delta);
 
             const toFinalize = finalized.add(delta);
-            const supply = await mining3.totalSupplyAt(toFinalize);
+            let supply = await mining3.totalSupplyAt(toFinalize);
+            supply = supply.div(base);
             await earningToken.connect(admin.signer).mint(admin.address, supply * i);
             await earningToken.connect(admin.signer).approve(mining3.address, supply * i);
             await mining3.connect(admin.signer).finalize(i);

@@ -98,6 +98,24 @@ contract Mining3 is
     }
 
     function withdraw() external whenNotPaused {
+        (
+            uint256 totalEarning,
+            Withdrawal memory updated
+        ) = _getUnwithdrawnEarnings();
+        _withdrawal[msg.sender] = updated;
+        IERC20(_earningToken).safeTransfer(msg.sender, totalEarning);
+    }
+
+    function getUnwithdrawnEarnings() external view returns(uint256) {
+        (uint256 totalEarning,) = _getUnwithdrawnEarnings();
+        return totalEarning;
+    }
+
+    function _getUnwithdrawnEarnings()
+        private
+        view
+        returns(uint256, Withdrawal memory)
+    {
         uint256 snapshotId = _finalized;
 
         Withdrawal storage withdrawal = _withdrawal[msg.sender];
@@ -120,10 +138,7 @@ contract Mining3 is
         if (index == length && snapshotId > prev) {
             totalEarning += _earning(balanceOf(msg.sender), prev, snapshotId);
         }
-
-        withdrawal.snapshotId = snapshotId;
-        withdrawal.index = index;
-        IERC20(_earningToken).safeTransfer(msg.sender, totalEarning);
+        return (totalEarning, Withdrawal(snapshotId, index));
     }
 
     function balanceOfAt(
