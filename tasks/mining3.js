@@ -130,7 +130,7 @@ task('mining3-finalize', 'finalize cycle for DeMineNFT contract')
         logger.info(`Mining3 contract ${mining3Addr} loaded`);
 
         const earningToken = await ethers.getContractAt(
-            '@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20',
+            'ERC20',
             await mining3.earningToken()
         );
         logger.info(`Earning token ${earningToken.address} loaded`);
@@ -249,13 +249,35 @@ task('mining3-inspect', 'finalize cycle for DeMineNFT contract')
             await mining3Proxy.beacon()
         );
 
+        const mining3 = await ethers.getContractAt(
+            'Mining3', contracts.mining3.target
+        );
+        const earningToken = await ethers.getContractAt(
+            'ERC20',
+            await mining3.earningToken()
+        );
+        const decimals = await earningToken.decimals();
+        let balance = await earningToken.balanceOf(mining3.address);
+        balance = new BN(balance.toString()).div('1e+' + decimals);
+
         logger.info(JSON.stringify({
             proxySource: contracts.mining3.source,
             mining3Proxy: mining3Proxy.address,
             beacon: beacon.address,
             implementation: await beacon.implementation(),
+            metadata: {
+                name: await mining3.name(),
+                symbol: await mining3.symbol(),
+                decimals: await mining3.decimals(),
+            },
+            earningToken: {
+                name: await earningToken.name(),
+                symbol: await earningToken.symbol(),
+                decimals: decimals,
+                balance: balance.toFixed(),
+            },
             beaconDeploy: beaconDeploy.address,
-            mining3Deploy: mining3Deploy.address,
+            implementationDeploy: mining3Deploy.address,
             proxyDeploy: proxyDeploy.address
         }, null, 2));
     });

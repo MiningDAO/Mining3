@@ -101,28 +101,27 @@ contract Mining3 is
         (
             uint256 totalEarning,
             Withdrawal memory updated
-        ) = _getUnwithdrawnEarnings();
+        ) = _getUnwithdrawnEarnings(msg.sender);
         _withdrawal[msg.sender] = updated;
         IERC20(_earningToken).safeTransfer(msg.sender, totalEarning);
     }
 
-    function getUnwithdrawnEarnings() external view returns(uint256) {
-        (uint256 totalEarning,) = _getUnwithdrawnEarnings();
+    function getUnwithdrawnEarnings(address account) external view returns(uint256) {
+        (uint256 totalEarning,) = _getUnwithdrawnEarnings(account);
         return totalEarning;
     }
 
-    function _getUnwithdrawnEarnings()
+    function _getUnwithdrawnEarnings(address account)
         private
         view
         returns(uint256, Withdrawal memory)
     {
         uint256 snapshotId = _finalized;
 
-        Withdrawal storage withdrawal = _withdrawal[msg.sender];
+        Withdrawal storage withdrawal = _withdrawal[account];
         uint256 prev = withdrawal.snapshotId;
-        require(snapshotId > prev, 'Mining3: already withdrawed');
 
-        Snapshots storage snapshots = _accountBalanceSnapshots[msg.sender];
+        Snapshots storage snapshots = _accountBalanceSnapshots[account];
         uint256 length = snapshots.ids.length;
 
         uint256 totalEarning;
@@ -136,7 +135,7 @@ contract Mining3 is
             prev = cur;
         }
         if (index == length && snapshotId > prev) {
-            totalEarning += _earning(balanceOf(msg.sender), prev, snapshotId);
+            totalEarning += _earning(balanceOf(account), prev, snapshotId);
         }
         return (totalEarning, Withdrawal(snapshotId, index));
     }

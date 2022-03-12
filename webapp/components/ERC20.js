@@ -91,7 +91,9 @@ function ERC20(props) {
         ids.push(ethers.BigNumber.from(
             Math.floor(new Date().getTime() / 1000
         )));
-        values.push(await props.contract.balanceOf(await signer.getAddress()));
+        values.push(await props.contract.balanceOf(
+            await signer.getAddress()
+        ));
 
         var dataSource = [];
         var totalEarning = new BigNumber(0);
@@ -112,7 +114,9 @@ function ERC20(props) {
             });
         }
 
-        let unwithdrawnEarning = await props.contract.getUnwithdrawnEarnings();
+        let unwithdrawnEarning = await props.contract.getUnwithdrawnEarnings(
+            await signer.getAddress()
+        );
         unwithdrawnEarning = new BigNumber(unwithdrawnEarning.toString()).div('1e+18');
 
         props.onEarning(totalEarning.toFixed(), unwithdrawnEarning.toFixed());
@@ -141,7 +145,7 @@ function ERC20(props) {
     const execWithdraw = async() => {
         setStatus(Status.WITHDRAWING);
         props.contract.withdraw().then((tx) => {
-            return tx.wait(3);
+            return tx.wait(1);
         }).then((txReceipt) => {
             return fetchData();
         }).then(() => {

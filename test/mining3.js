@@ -172,14 +172,14 @@ describe("Mining3", function () {
         }
     });
 
-    it.only("mining3 withdraw", async function() {
+    it("mining3 withdraw", async function() {
         const date = new Date();
         const timestamp = time.toEpoch(date);
         const finalized = await mining3.lastFinalizedAt();
 
         await mining3.connect(admin.signer).mint(test.address, base.mul(10000));
 
-        const withdraw = async function(user, earning) {
+        const withdraw = async function(user) {
             const balance = await earningToken.balanceOf(mining3.address);
             const withdrawAt = await mining3.lastWithdrawAt(user.address);
             const finalizedAt = await mining3.lastFinalizedAt();
@@ -255,9 +255,8 @@ describe("Mining3", function () {
         expect(
             await mining3.lastWithdrawAt(test.address)
         ).to.equal(await mining3.lastFinalizedAt());
-
-        await expect(
-            mining3.connect(test).withdraw()
-        ).to.be.revertedWith('Mining3: already withdrawed');
+        expect(
+            await mining3.getUnwithdrawnEarnings(test.address)
+        ).to.equal(0);
     });
 });

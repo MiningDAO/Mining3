@@ -24,7 +24,7 @@ const contractAbi = [
   "function withdraw() external",
   "function balanceOfAt(address account, uint256 snapshotId) external view returns (uint256)",
   "function balanceOf(address account) external view returns (uint256)",
-  "function getUnwithdrawnEarnings() external view returns(uint256)",
+  "function getUnwithdrawnEarnings(address account) external view returns(uint256)",
   "event Transfer(address indexed from, address indexed to, uint amount)",
 ];
 
