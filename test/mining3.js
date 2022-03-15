@@ -247,7 +247,7 @@ describe("Mining3", function () {
             await mining3.connect(admin.signer).finalize(i);
 
             if (i % 5 == 0) {
-                await mining3.connect(test).transfer(admin.address, 500);
+                await mining3.connect(test).transfer(admin.address, base.mul(500));
             }
         }
 
@@ -258,5 +258,26 @@ describe("Mining3", function () {
         expect(
             await mining3.getUnwithdrawnEarnings(test.address)
         ).to.equal(0);
+    });
+
+    it("mining3 real data", async function() {
+        await earningToken.connect(admin.signer).mint(admin.address, base.mul(10000));
+        await earningToken.connect(admin.signer).approve(mining3.address, base.mul(10000));
+        const earningPerToken = new ethers.BigNumber.from("4504666853044");
+
+        await mining3.connect(admin.signer).mint(admin.address, base.mul(10000));
+        const timestamp = time.toEpoch(new Date());
+        for (let i = 0; i <= 5; i++) {
+            if (i == 0) {
+                await mining3.connect(admin.signer).transfer(test.address, base.mul(100));
+            } else if (i == 3) {
+                await mining3.connect(admin.signer).finalize("4504666853044");
+            } else if (i == 5) {
+                await mining3.connect(admin.signer).transfer(test.address, base.mul(100));
+            }
+            await mine(timestamp + 86400 * (i + 1));
+        }
+        const earning = await mining3.connect(test).getUnwithdrawnEarnings(test.address);
+        expect(earning).to.equal(earningPerToken.mul(100));
     });
 });

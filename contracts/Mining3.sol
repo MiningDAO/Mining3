@@ -134,7 +134,9 @@ contract Mining3 is
             totalEarning += _earning(snapshots.values[index], prev, cur);
             prev = cur;
         }
-        if (index == length && snapshotId > prev) {
+        if (index < length) {
+            totalEarning += _earning(snapshots.values[index], prev, snapshotId);
+        } else if (snapshotId > prev) {
             totalEarning += _earning(balanceOf(account), prev, snapshotId);
         }
         return (totalEarning, Withdrawal(snapshotId, index));
