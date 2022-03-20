@@ -19,6 +19,13 @@ const config = {
             governor: '0x68d47F8bEA66758453D45BC2Be6eEc8a121BAC54',
         },
     },
+    governor: {
+        matic: {
+            votingDelay: 37565,
+            votingPeriod: 37565,
+            proposalThreshold: 100000000000000000000000,
+        },
+    },
     statePath: path.join(__dirname, './state/'),
     courier: {
         brand: process.env.COURIER_BRAND_ID,

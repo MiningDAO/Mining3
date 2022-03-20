@@ -5,6 +5,7 @@ require('hardhat-gas-reporter');
 require('hardhat-deploy');
 require('hardhat-deploy-ethers');
 require('@openzeppelin/hardhat-upgrades');
+require('./tasks/dao.js');
 require('./tasks/mining3.js');
 require('./tasks/e2e.js');
 

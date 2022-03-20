@@ -1,7 +1,7 @@
 const common = require('../lib/common.js');
 const config = require('../lib/config.js');
 
-module.exports = async ({ ethers, localConfig } = hre) => {
+module.exports = async ({ ethers, localConfig, network} = hre) => {
     const admin = await config.admin(hre);
     await common.confirmAndDeploy(
         hre,
@@ -24,10 +24,17 @@ module.exports = async ({ ethers, localConfig } = hre) => {
     }
 
     if (dao && dao.token) {
+        const governorConfig = localConfig.governor[network.name];
         await common.confirmAndDeploy(
             hre,
             'Mining3Governor',
-            [dao.token, timelock.address]
+            [
+                dao.token,
+                governorConfig.votingDelay,
+                governorConfig.votingPeriod,
+                governorConfig.proposalThreshold,
+                timelock.address
+            ]
         );
     }
 }

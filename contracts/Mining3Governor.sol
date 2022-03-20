@@ -1,40 +1,46 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/governance/Governor.sol";
 import "@openzeppelin/contracts/governance/compatibility/GovernorCompatibilityBravo.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
 import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 
 contract Mining3Governor is
-    Governor,
+    GovernorSettings,
     GovernorCompatibilityBravo,
     GovernorVotes,
     GovernorVotesQuorumFraction,
     GovernorTimelockControl
 {
-    constructor(IVotes _token, TimelockController _timelock)
+    constructor(
+        IVotes _token,
+        uint256 initialVotingDelay,
+        uint256 initialVotingPeriod,
+        uint256 initialProposalThreshold,
+        TimelockController _timelock
+    )
         Governor("Mining3Governor")
+        GovernorSettings(initialVotingDelay, initialVotingPeriod, initialProposalThreshold)
         GovernorVotes(_token)
         GovernorVotesQuorumFraction(4)
         GovernorTimelockControl(_timelock)
     {}
 
-    function votingDelay() public pure override returns (uint256) {
-        return 37565; // 1 day
+    function votingDelay() public view override(IGovernor, GovernorSettings) returns (uint256) {
+        return super.votingDelay();
     }
 
-    function votingPeriod() public pure override returns (uint256) {
-        return 37565; // 1 day
+    function votingPeriod() public view override(IGovernor, GovernorSettings) returns (uint256) {
+        return super.votingPeriod();
     }
 
-    function proposalThreshold() public pure override returns (uint256) {
-        return 100000;
+    function proposalThreshold() public view override(Governor, GovernorSettings) returns (uint256) {
+        return super.proposalThreshold();
     }
 
     // The functions below are overrides required by Solidity.
-
     function quorum(uint256 blockNumber)
         public
         view
