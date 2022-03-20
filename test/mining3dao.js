@@ -1,27 +1,27 @@
 const { expect } = require("chai");
-const { localConfig, ethers } = hre = require("hardhat");
-const { admin } = require("../lib/config.js");
+const { localConfig, ethers, upgrades } = hre = require("hardhat");
+const config = require("../lib/config.js");
 
 describe("Mining3DAO", function () {
     const decimals = 18;
     const supply = ethers.BigNumber.from(10).pow(decimals + 8);
 
     var owner, deployer, test;
-    var dao;
+    var dao, governor, timelock;
 
     beforeEach(async function() {
         // set up account
-        owner = await admin(hre);
+        owner = await config.admin(hre);
         const signers = await ethers.getNamedSigners();
         deployer = signers.deployer;
         test = signers.test;
 
-        // deploy
+        // deploy dao token
         const DAO = await ethers.getContractFactory("Mining3DAO");
         dao = await upgrades.deployProxy(DAO, [owner.address]);
     });
 
-    it("MiningDAO Metadata", async function() {
+    it("Mining3DAO Metadata", async function() {
         expect(await dao.name()).to.equal('Mining3DAO');
         expect(await dao.symbol()).to.equal('MIN3');
         expect(await dao.decimals()).to.equal(18);

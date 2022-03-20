@@ -12,11 +12,9 @@ const config = {
     dao: {
         mumbai: {
             token: '0x0E4924dd25415F0C702DEB81f143E6dCCB63FAAC',
-            governor: '0xaa2B12d9460bA51643CEfE53ED4355D19499D872',
         },
         matic: {
             token: '0xb2752E0a433A41f19E9348B720d9B9cf9CC433Ee',
-            governor: '0x68d47F8bEA66758453D45BC2Be6eEc8a121BAC54',
         },
     },
     governor: {
@@ -67,12 +65,10 @@ const config = {
         api: {
             rinkeby: 'https://safe-transaction.rinkeby.gnosis.io',
             bsc: 'https://safe-transaction.bsc.gnosis.io',
-            matic: 'https://safe-transaction.polygon.gnosis.io/',
         },
         admin: {
             bsc: '0x782A6a9Bc11Fb6e8320b92f2217AfD80f813Bd05',
             rinkeby: '0xf24c00BafB6Cb10C5EA13Fa896526df604EE2B19',
-            matic: '0x8aD0d649B73FaA869EB658aA4AAeC44aaF9fB0a9',
         }
     },
     hashPerToken: {
