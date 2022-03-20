@@ -4,6 +4,7 @@ require('hardhat-contract-sizer');
 require('hardhat-gas-reporter');
 require('hardhat-deploy');
 require('hardhat-deploy-ethers');
+require('@openzeppelin/hardhat-upgrades');
 require('./tasks/mining3.js');
 require('./tasks/e2e.js');
 
@@ -37,7 +38,15 @@ extendEnvironment((hre) => {
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-    solidity: "0.8.4",
+    solidity: {
+      version: "0.8.4",
+      settings: {
+        optimizer: {
+          enabled: true,
+          runs: 1,
+        }
+      }
+    },
     networks: {
         bscdev: {
             url: "https://data-seed-prebsc-1-s1.binance.org:8545",
@@ -50,7 +59,19 @@ module.exports = {
             chainId: 56,
             gasPrice: 5000000000,
             accounts: config.accounts
-        }
+        },
+        matic: {
+            live: true,
+            url: config.alchemy.matic,
+            chainId: 137,
+            accounts: config.accounts
+        },
+        mumbai: {
+            live: true,
+            url: config.alchemy.mumbai,
+            chainId: 80001,
+            accounts: config.accounts
+        },
     },
     etherscan: {
         apiKey: {
@@ -74,12 +95,6 @@ module.exports = {
         currency: 'USD',
         coinmarketcap: '1c5db8be-2272-42c9-8d48-51a072cdc5a1',
         gasPrice: 90
-    },
-    settings: {
-        optimizer: {
-            enabled: true,
-            runs: 100,
-        },
     },
     path: {
         deploy: 'deploy',

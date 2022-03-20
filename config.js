@@ -9,6 +9,16 @@ const config = {
         process.env.DEPLOYER,
         process.env.TEST,
     ],
+    dao: {
+        mumbai: {
+            token: '0x0E4924dd25415F0C702DEB81f143E6dCCB63FAAC',
+            governor: '0xaa2B12d9460bA51643CEfE53ED4355D19499D872',
+        },
+        matic: {
+            token: '0xb2752E0a433A41f19E9348B720d9B9cf9CC433Ee',
+            governor: '0x68d47F8bEA66758453D45BC2Be6eEc8a121BAC54',
+        },
+    },
     statePath: path.join(__dirname, './state/'),
     courier: {
         brand: process.env.COURIER_BRAND_ID,
