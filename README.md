@@ -1,6 +1,6 @@
-# IronchainDAO Token
+# Mining3DAO Token
 
 ```shell
 npx hardhat deploy
-npx hardhat test/ironchaindao-test.js
+npx hardhat test test/mining3.js
 ```
