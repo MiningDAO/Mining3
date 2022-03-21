@@ -15,13 +15,15 @@ const config = {
         },
         matic: {
             token: '0xb2752E0a433A41f19E9348B720d9B9cf9CC433Ee',
+            governor: '0xa59dccAd0f1ded519CF8Bd77a5b1eCACf6102691',
+            timelock: '0xE0CBB44Ab7C2f42a3AaCBf8E8C37BEb9C53118b5',
         },
     },
     governor: {
         matic: {
-            votingDelay: 37565,
-            votingPeriod: 37565,
-            proposalThreshold: 100000000000000000000000,
+            votingDelay: "37565",
+            votingPeriod: "37565",
+            proposalThreshold: "100000000000000000000000",
         },
     },
     statePath: path.join(__dirname, './state/'),
